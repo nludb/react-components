@@ -1,5 +1,4 @@
 import React from 'react';
-import '../src/scss/tailwind.scss';
 
 const Layout = ({ children }) => {
   return (

@@ -2,6 +2,7 @@ import React from 'react';
 import { addDecorator } from '@storybook/react';
 import { withInfo } from '@storybook/addon-info';
 import Layout from './Layout';
+import '../src/scss/base.scss';
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },

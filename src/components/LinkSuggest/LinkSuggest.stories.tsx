@@ -4,7 +4,7 @@ import { ComponentStory, ComponentMeta } from '@storybook/react';
 import { LinkSuggest } from './LinkSuggest';
 
 export default {
-  title: 'NLUDB Example/LinkSuggest',
+  title: 'Link Suggestion/Widget',
   component: LinkSuggest,
   argTypes: {
   },
