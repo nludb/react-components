@@ -27,6 +27,7 @@ export interface ErrorParams {
 
 export interface ResultParams {
   buttonPropsList?: ButtonProps[] | null
+  resultStyles?: any
 }
 
 const Link = (params: LinkParams) => {
@@ -50,14 +51,14 @@ const Searching = () => {
 }
 
 const Result = (params: ResultParams) => {
-  const { buttonPropsList } = params;
+  const { buttonPropsList, resultStyles } = params;
 
   if ((typeof buttonPropsList == 'undefined') || (buttonPropsList === null) || (!buttonPropsList)){
     return <Empty />
   }
 
   return (
-    <ButtonList>
+    <ButtonList resultStyles={resultStyles}>
       {buttonPropsList.map(props => <Button {...props} />)}
     </ButtonList>
   )
@@ -92,7 +93,7 @@ export interface LinkSuggestProps {
   /*
    * Extracts the link and label from a search result
    */
-  hitToButtonLabel?: (hit: SearchHit) => string
+  hitToButtonLabel?: (hit: SearchHit) => string | null
   /*
    * What to do when a button is clicked.
    */
@@ -101,17 +102,19 @@ export interface LinkSuggestProps {
    * What to do when a button is hovered.
    */
   onButtonHover?: (hit: SearchHit, isHovering: boolean) => void
+  /*
+   * CSS styles to apply to the results object
+   */
+  resultStyles?: any
 }
 
-function _defaultHitToButtonLabel(hit: SearchHit): string {
-  const metadata = {
-    "url": "https://www.google.com",
-    "title": "Google",
-    "slug": "google",
-    "number": "23",
-    "numberAndSlug": "23-google"
+function _defaultHitToButtonLabel(hit: SearchHit): string | null {
+  if (hit && hit.metadata) {
+    if ((hit.metadata as any)['title']) {
+      return (hit.metadata as any)['title'];
+    }
   }
-  return metadata.title
+  return null
 }
 
 /**
@@ -126,6 +129,7 @@ export const LinkSuggest = ({
   hitToButtonLabel,
   onButtonClick,
   onButtonHover,
+  resultStyles,
   ...props
 }: LinkSuggestProps) => {
 
@@ -157,8 +161,8 @@ export const LinkSuggest = ({
         onHover: onButtonHover,
         hit: hit  
       }
-    })
-    element = <Result buttonPropsList={buttonPropsList} />
+    }).filter((x) => x.label != null)
+    element = <Result resultStyles={resultStyles} buttonPropsList={buttonPropsList as ButtonProps[]} />
   }
 
   /*
@@ -179,8 +183,6 @@ export const LinkSuggest = ({
       }
     }
   };
-
   actions.search(query);
-
   return element;
 };
