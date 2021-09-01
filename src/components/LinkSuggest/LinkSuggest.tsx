@@ -1,10 +1,10 @@
 import React from 'react';
 import './linkSuggest.css';
-import { EmbeddingModel, SearchResult, SearchHit } from '@nludb/client';
+import { EmbeddingModel, SearchHit } from '@nludb/client';
 import { useNLUDB, useEmbeddingIndex } from '@nludb/react-hooks';
 import { ButtonList } from './ButtonList/ButtonList'
 import { Button, ButtonProps } from './Button/Button'
-import { parseAsync } from '@babel/core';
+
 export interface State {
   element: React.ReactFragment,
   isSearching: boolean,
