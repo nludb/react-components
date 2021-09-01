@@ -6,6 +6,7 @@ export interface ButtonProps {
    * Button contents
    */
   label: string;
+
   /**
    * Optional click handler
    */
@@ -17,10 +18,11 @@ export interface ButtonProps {
  */
 export const Button = ({
   label,
+  onClick,
   ...props
 }: ButtonProps) => {
   return (
-    <button type="button" className="whitespace-nowrap link-suggest-button" {...props}>
+    <button onClick={onClick} type="button" className="whitespace-nowrap link-suggest-button" {...props}>
       {label}
     </button>
   );

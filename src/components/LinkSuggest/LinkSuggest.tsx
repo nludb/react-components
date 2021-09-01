@@ -1,8 +1,10 @@
 import React from 'react';
 import './linkSuggest.css';
-import { EmbeddingModel, SearchResult } from '@nludb/client';
+import { EmbeddingModel, SearchResult, SearchHit } from '@nludb/client';
 import { useNLUDB, useEmbeddingIndex } from '@nludb/react-hooks';
-
+import { ButtonList } from './ButtonList/ButtonList'
+import { Button, ButtonProps } from './Button/Button'
+import { parseAsync } from '@babel/core';
 export interface State {
   element: React.ReactFragment,
   isSearching: boolean,
@@ -24,7 +26,7 @@ export interface ErrorParams {
 }
 
 export interface ResultParams {
-  result: SearchResult | null
+  buttonPropsList?: ButtonProps[] | null
 }
 
 const Link = (params: LinkParams) => {
@@ -48,19 +50,23 @@ const Searching = () => {
 }
 
 const Result = (params: ResultParams) => {
-  const { result } = params;
+  const { buttonPropsList } = params;
 
-  if (result === null) {
+  if ((typeof buttonPropsList == 'undefined') || (buttonPropsList === null) || (!buttonPropsList)){
     return <Empty />
   }
 
-  if (result && result.hits && (result.hits.length === 0)) {
-    return <EmptyResult />
-  }
-
-  return <div>Has some!</div>
+  return (
+    <ButtonList>
+      {buttonPropsList.map(props => <Button {...props} />)}
+    </ButtonList>
+  )
 }
 
+export interface LinkAndLabel {
+  link: string
+  label: string
+}
 
 export interface LinkSuggestProps {
   /**
@@ -83,6 +89,26 @@ export interface LinkSuggestProps {
    * Query
    */
   query: string
+  /*
+   * Extracts the link and label from a search result
+   */
+  hitToButtonProps?: (hit: SearchHit) => ButtonProps
+}
+
+function _defaultHitToButtonProps(hit: SearchHit): ButtonProps {
+  const metadata = {
+    "url": "https://www.google.com",
+    "title": "Google",
+    "slug": "google",
+    "number": "23",
+    "numberAndSlug": "23-google"
+  }
+  return {
+    label: metadata.title,
+    onClick: () => {
+      alert(metadata.url)
+    }
+  }
 }
 
 /**
@@ -94,6 +120,7 @@ export const LinkSuggest = ({
   nludbKey,
   nludbEndpoint,
   indexName,
+  hitToButtonProps,
   ...props
 }: LinkSuggestProps) => {
 
@@ -117,7 +144,9 @@ export const LinkSuggest = ({
     element = <Searching />
   } else {
     // TODO: Add a state to mean "no search was requested"
-    element = <Result result={results} />
+    let extractionFn = hitToButtonProps || _defaultHitToButtonProps;
+    let buttonPropsList = results?.hits.map(extractionFn)
+    element = <Result buttonPropsList={buttonPropsList} />
   }
 
   /*
@@ -130,7 +159,11 @@ export const LinkSuggest = ({
       if ((typeof query == 'undefined') || (query === null)) {
         reset()
       } else {
-        search({query, k:desiredResponses})
+        search({
+          query, 
+          k:desiredResponses, 
+          includeMetadata: true
+        })
       }
     }
   };

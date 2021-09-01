@@ -14,4 +14,6 @@ const Template: ComponentStory<typeof LinkSuggest> = (args) => <LinkSuggest {...
 
 export const Primary = Template.bind({});
 Primary.args = {
+  nludbEndpoint: "https://api.staging.nludb.com/api/v1/",
+  desiredResponses: 4
 };
