@@ -9,6 +9,7 @@ const packageJson = require("./package.json");
 
 export default {
   input: "src/index.ts",
+  // preferBuiltins: true,
   output: [
     {
       file: packageJson.main,
@@ -21,10 +22,11 @@ export default {
       sourcemap: true
     }
   ],
+  external: ['fs'],
   plugins: [
     json(),
     peerDepsExternal(),
-    resolve(),
+    // resolve(),
     commonjs(),
     typescript({ useTsconfigDeclarationDir: true }),
     postcss({
