@@ -93,14 +93,14 @@ export interface LinkSuggestProps {
   /*
    * Extracts the link and label from a search result
    */
-  resultsToButtonProps?: (results: SearchResult) => ButtonProps[]
+  resultsToButtonProps?: (results?: SearchResult | null) => ButtonProps[]
   /*
    * CSS styles to apply to the results object
    */
   resultStyles?: any
 }
 
-function _resultsToButtonProps(results: SearchResult): ButtonProps[] {
+function _resultsToButtonProps(results?: SearchResult | null): ButtonProps[] {
   let buttonPropsList: ButtonProps[] = [];
 
   if (results) {
