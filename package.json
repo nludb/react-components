@@ -1,6 +1,6 @@
 {
   "name": "@nludb/react-components",
-"version": "1.0.13",
+"version": "1.0.14",
   "description": "Example React Components for NLUDB",
   "main": "lib/index.js",
   "module": "lib/index.esm.js",

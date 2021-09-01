@@ -1,6 +1,6 @@
 import React from 'react';
 import './linkSuggest.css';
-import { EmbeddingModel, SearchHit } from '@nludb/client';
+import { EmbeddingModel, SearchHit, SearchResult } from '@nludb/client';
 import { useNLUDB, useEmbeddingIndex } from '@nludb/react-hooks';
 import { ButtonList } from './ButtonList/ButtonList'
 import { Button, ButtonProps } from './Button/Button'
@@ -93,28 +93,54 @@ export interface LinkSuggestProps {
   /*
    * Extracts the link and label from a search result
    */
-  hitToButtonLabel?: (hit: SearchHit) => string | null
-  /*
-   * What to do when a button is clicked.
-   */
-  onButtonClick?: (hit: SearchHit) => void
-  /*
-   * What to do when a button is hovered.
-   */
-  onButtonHover?: (hit: SearchHit, isHovering: boolean) => void
+  resultsToButtonProps?: (results: SearchResult) => ButtonProps[]
   /*
    * CSS styles to apply to the results object
    */
   resultStyles?: any
 }
 
-function _defaultHitToButtonLabel(hit: SearchHit): string | null {
-  if (hit && hit.metadata) {
-    if ((hit.metadata as any)['title']) {
-      return (hit.metadata as any)['title'];
+function _resultsToButtonProps(results: SearchResult): ButtonProps[] {
+  let buttonPropsList: ButtonProps[] = [];
+
+  if (results) {
+    for (let result of results.hits) {
+      result.metadata = {
+        "links": {
+          "https://docs.helpscout.com/article/22-get-started-with-workflows": {
+            "url": "https://docs.helpscout.com/article/22-get-started-with-workflows", 
+            "title": "Get Started With Workflows", 
+            "slug": 
+            "get-started-with-workflows", 
+            "number": "22", 
+            "numberAndSlug": 
+            "22-get-started-with-workflows"
+          }
+        }
+      }
+      let metadata = result.metadata as any;
+      if (metadata) {
+        if (metadata.links) {
+          for (let link in metadata.links) {
+            let obj = metadata.links[link];
+            if (obj.title) {
+              buttonPropsList.push({
+                label: obj.title,
+                onClick: () => {},
+                onHover: () => {},
+                hit: {
+                  value: obj.title,
+                  score: result.score,
+                  metadata: obj
+                }
+              })
+            }
+          }
+        }
+      }
     }
-  }
-  return null
+  } 
+  return buttonPropsList;
 }
 
 /**
@@ -126,9 +152,7 @@ export const LinkSuggest = ({
   nludbKey,
   nludbEndpoint,
   indexName,
-  hitToButtonLabel,
-  onButtonClick,
-  onButtonHover,
+  resultsToButtonProps,
   resultStyles,
   ...props
 }: LinkSuggestProps) => {
@@ -153,15 +177,7 @@ export const LinkSuggest = ({
     element = <Searching />
   } else {
     // TODO: Add a state to mean "no search was requested"
-    let extractionFn = hitToButtonLabel || _defaultHitToButtonLabel;
-    let buttonPropsList = results?.hits.map(hit => {
-      return {
-        label: extractionFn(hit),
-        onClick: onButtonClick,
-        onHover: onButtonHover,
-        hit: hit  
-      }
-    }).filter((x) => x.label != null)
+    let buttonPropsList: ButtonProps[] = (resultsToButtonProps || _resultsToButtonProps)(results)
     element = <Result resultStyles={resultStyles} buttonPropsList={buttonPropsList as ButtonProps[]} />
   }
 
