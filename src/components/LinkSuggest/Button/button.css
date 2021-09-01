@@ -7,7 +7,7 @@
   line-height: 1;
 
   font-size: 12px;
-  padding: 8px 14px;
+  padding: 6px 10px;
   margin-right: 8px;
 
   border: 1px solid rgb(165, 178, 189);
@@ -17,7 +17,7 @@
 
 .link-suggest-button:hover {
   /* border-color: rgb(49, 67, 81); */
-  background-color: #e6e5e5
+  background-color: #f9fafa
 }
 
 .link-suggest-button:active {

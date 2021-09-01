@@ -38,15 +38,15 @@ const Error = (params: ErrorParams) => {
 }
 
 const Empty = () => {
-  return <div>Empty</div>
+  return <div></div>
 }
 
 const EmptyResult = () => {
-  return <div>Empty</div>
+  return <div></div>
 }
 
 const Searching = () => {
-  return <div>Searching</div>
+  return <div className="searching"></div>
 }
 
 const Result = (params: ResultParams) => {
