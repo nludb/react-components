@@ -1,3 +1,4 @@
+import { SearchHit } from '@nludb/client';
 import React from 'react';
 import './button.css';
 
@@ -10,7 +11,17 @@ export interface ButtonProps {
   /**
    * Optional click handler
    */
-  onClick?: () => void;
+  onClick?: (hit: SearchHit) => void;
+
+  /**
+   * Optional hover handler
+   */
+   onHover?: (hit: SearchHit, isHovering: boolean) => void;
+
+  /**
+   * The Search Hit corresponding to this button
+   */
+  hit: SearchHit
 }
 
 /**
@@ -19,10 +30,22 @@ export interface ButtonProps {
 export const Button = ({
   label,
   onClick,
+  onHover,
+  hit,
   ...props
 }: ButtonProps) => {
+  const doClick = () => {
+    onClick && onClick(hit)
+  }
+  const yesHover = () => {
+    onHover && onHover(hit, true);
+  }
+  const noHover = () => {
+    onHover && onHover(hit, true);
+  }
+
   return (
-    <button onClick={onClick} type="button" className="whitespace-nowrap link-suggest-button" {...props}>
+    <button onClick={doClick} onMouseEnter={yesHover} onMouseLeave={noHover} type="button" className="whitespace-nowrap link-suggest-button" {...props}>
       {label}
     </button>
   );

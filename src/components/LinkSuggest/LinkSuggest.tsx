@@ -92,10 +92,18 @@ export interface LinkSuggestProps {
   /*
    * Extracts the link and label from a search result
    */
-  hitToButtonProps?: (hit: SearchHit) => ButtonProps
+  hitToButtonLabel?: (hit: SearchHit) => string
+  /*
+   * What to do when a button is clicked.
+   */
+  onButtonClick?: (hit: SearchHit) => void
+  /*
+   * What to do when a button is hovered.
+   */
+  onButtonHover?: (hit: SearchHit, isHovering: boolean) => void
 }
 
-function _defaultHitToButtonProps(hit: SearchHit): ButtonProps {
+function _defaultHitToButtonLabel(hit: SearchHit): string {
   const metadata = {
     "url": "https://www.google.com",
     "title": "Google",
@@ -103,12 +111,7 @@ function _defaultHitToButtonProps(hit: SearchHit): ButtonProps {
     "number": "23",
     "numberAndSlug": "23-google"
   }
-  return {
-    label: metadata.title,
-    onClick: () => {
-      alert(metadata.url)
-    }
-  }
+  return metadata.title
 }
 
 /**
@@ -120,7 +123,9 @@ export const LinkSuggest = ({
   nludbKey,
   nludbEndpoint,
   indexName,
-  hitToButtonProps,
+  hitToButtonLabel,
+  onButtonClick,
+  onButtonHover,
   ...props
 }: LinkSuggestProps) => {
 
@@ -144,8 +149,15 @@ export const LinkSuggest = ({
     element = <Searching />
   } else {
     // TODO: Add a state to mean "no search was requested"
-    let extractionFn = hitToButtonProps || _defaultHitToButtonProps;
-    let buttonPropsList = results?.hits.map(extractionFn)
+    let extractionFn = hitToButtonLabel || _defaultHitToButtonLabel;
+    let buttonPropsList = results?.hits.map(hit => {
+      return {
+        label: extractionFn(hit),
+        onClick: onButtonClick,
+        onHover: onButtonHover,
+        hit: hit  
+      }
+    })
     element = <Result buttonPropsList={buttonPropsList} />
   }
 
