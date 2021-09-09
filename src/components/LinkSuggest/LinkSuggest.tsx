@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './linkSuggest.css';
-import { EmbeddingModel, SearchHit, SearchResult } from '@nludb/client';
-import { useNLUDB, useEmbeddingIndex } from '@nludb/react-hooks';
+import { EmbeddingModel, ParsingModel, SearchHit, SearchResult } from '@nludb/client';
+import { useNLUDB, useEmbeddingIndex, useParser } from '@nludb/react-hooks';
 import { ButtonList } from './ButtonList/ButtonList'
 import { Button, ButtonProps } from './Button/Button'
+import { getQueryParams } from '@storybook/client-api';
 
 export interface State {
   element: React.ReactFragment,
@@ -91,6 +92,14 @@ export interface LinkSuggestProps {
    */
   query: string
   /*
+   * Split Sentenes
+   */
+  splitSentences: boolean
+  /*
+   * Filter Profile
+   */
+  filterProfile: string
+  /*
    * Extracts the link and label from a search result
    */
   resultsToButtonProps?: (results?: SearchResult | null) => ButtonProps[]
@@ -101,23 +110,9 @@ export interface LinkSuggestProps {
 }
 
 function _resultsToButtonProps(results?: SearchResult | null): ButtonProps[] {
-  let buttonPropsList: ButtonProps[] = [];
-
+  let buttonPropsList = [];
   if (results) {
     for (let result of results.hits) {
-      result.metadata = {
-        "links": {
-          "https://docs.helpscout.com/article/22-get-started-with-workflows": {
-            "url": "https://docs.helpscout.com/article/22-get-started-with-workflows", 
-            "title": "Get Started With Workflows", 
-            "slug": 
-            "get-started-with-workflows", 
-            "number": "22", 
-            "numberAndSlug": 
-            "22-get-started-with-workflows"
-          }
-        }
-      }
       let metadata = result.metadata as any;
       if (metadata) {
         if (metadata.links) {
@@ -154,8 +149,11 @@ export const LinkSuggest = ({
   indexName,
   resultsToButtonProps,
   resultStyles,
+  splitSentences,
+  filterProfile,
   ...props
 }: LinkSuggestProps) => {
+
 
   const [nludb, nludbError] = useNLUDB({
     apiKey: nludbKey,
@@ -167,6 +165,14 @@ export const LinkSuggest = ({
     name: indexName,
     model: EmbeddingModel.QA,
     upsert: true,
+    verbose: false
+  })
+
+  const [{results: parseResult, error: parseError}, {reset: resetParser, parse}] = useParser({
+    nludb: nludb,
+    model: ParsingModel.EN_DEFAULT,
+    includeEntities: false,
+    includeTokens: false,
     verbose: false
   })
 
@@ -185,17 +191,47 @@ export const LinkSuggest = ({
    *Return some state for reporting and actions.
    */
   const state: State = { element, isSearching, error: indexError };
+
+  useEffect(() => {
+    if (splitSentences) {
+      if (parseResult) {
+        let queries = []
+        for (let doc of parseResult.docs) {
+          for (let sent of doc.sentences) {
+            queries.push(sent.text.trim())
+          }
+        }
+        search({
+          queries: queries, 
+          k:desiredResponses, 
+          includeMetadata: true
+        })
+      } else {
+        reset()
+      }
+    }
+  }, [parseResult, splitSentences]);
+
   const actions: Actions = {
     reset,
     search: (query: string | null | undefined): void => {
       if ((typeof query == 'undefined') || (query === null)) {
         reset()
       } else {
-        search({
-          query, 
-          k:desiredResponses, 
-          includeMetadata: true
-        })
+        if (splitSentences) {
+          parse({
+            docs: [query],
+            metadata: {
+              string_filter: filterProfile
+            }
+          })
+        } else {
+          search({
+            query, 
+            k:desiredResponses, 
+            includeMetadata: true
+          })
+        }
       }
     }
   };

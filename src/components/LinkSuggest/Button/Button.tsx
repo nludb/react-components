@@ -41,7 +41,7 @@ export const Button = ({
     onHover && onHover(hit, true);
   }
   const noHover = () => {
-    onHover && onHover(hit, true);
+    onHover && onHover(hit, false);
   }
 
   return (
